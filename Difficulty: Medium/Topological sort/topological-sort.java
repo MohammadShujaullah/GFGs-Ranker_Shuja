@@ -83,18 +83,45 @@ class Solution {
         
         ArrayList<Integer>result= new ArrayList<>();
         
-         boolean visited[]= new boolean[mp.size()];
-         Stack<Integer>st= new Stack<>();
+     
+      Queue<Integer>q= new LinkedList<>();
+      
+      //introduce the indgree array
+      
+      int [] indegree= new int[mp.size()];
+      
+      //  step 1------now populate the indegree
+      for(int u=0;u<mp.size();u++){
+          for(int v:mp.get(u)){
+              indegree[v]++;
+              
+              
+          }
+      }
+      
+      // step2-----
+      for(int i=0;i<mp.size();i++){
+          if(indegree[i]==0){
+              q.add(i);
+          }
+      }
+      
          
-         
-         for(int i=0;i<mp.size();i++){
-             if(!visited[i]){
-                 DFS(mp,i,visited,st);
-             }
-         }
-         while(!st.isEmpty()){
-             result.add(st.pop());
-         }
+        // step 3-----BFS
+        while(!q.isEmpty()){
+            int u=q.remove();
+            result.add(u);
+            for(int v:mp.get(u)){
+                indegree[v]--;
+                
+                if(indegree[v]==0){
+                    q.add(v);
+                }
+            }
+        }
+        
+        
+        
          return result;
     }
 }
