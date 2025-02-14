@@ -69,7 +69,25 @@ class iPair {
  
 
 class Solution {
-    // Function to find the shortest distance of all vertices from source vertex `src`.
+      // Custom pair class that implements Comparable
+    static class Pair implements Comparable<Pair> {
+        int distance, node;
+        Pair(int distance, int node) {
+            this.distance = distance;
+            this.node = node;
+        }
+
+        @Override
+        public int compareTo(Pair other) {
+            if (this.distance == other.distance)
+                return Integer.compare(this.node, other.node);
+            return Integer.compare(this.distance, other.distance);
+        }
+    }
+
+  
+
+    // Function to find the shortest distance of all vertices from source vertex `src`
     ArrayList<Integer> dijkstra(ArrayList<ArrayList<iPair>> adj, int src) {
         int n = adj.size(); // Number of vertices
         int[] result = new int[n]; // Store the shortest distance
@@ -78,16 +96,14 @@ class Solution {
         Arrays.fill(result, Integer.MAX_VALUE);
         result[src] = 0;
 
-        // Min-heap (PriorityQueue) to store (distance, node)
-        PriorityQueue<AbstractMap.SimpleEntry<Integer, Integer>> pq = 
-            new PriorityQueue<>(Comparator.comparingInt(AbstractMap.SimpleEntry::getKey));
+        // Min-heap (TreeSet) to store (distance, node)
+        TreeSet<Pair> t = new TreeSet<>();
+        t.add(new Pair(0, src)); // (distance, node)
 
-        pq.add(new AbstractMap.SimpleEntry<>(0, src)); // (distance, node)
-
-        while (!pq.isEmpty()) {
-            AbstractMap.SimpleEntry<Integer, Integer> p = pq.poll(); // Extract min distance node
-            int distance = p.getKey();
-            int node = p.getValue();
+        while (!t.isEmpty()) {
+            Pair p = t.pollFirst(); // Extract min distance node
+            int distance = p.distance;
+            int node = p.node;
 
             // Traverse all adjacent nodes
             for (iPair v : adj.get(node)) {
@@ -95,8 +111,9 @@ class Solution {
                 int wl = v.second;
 
                 if (distance + wl < result[adjnode]) { // Relaxation step
+                    t.remove(new Pair(result[adjnode], adjnode)); // Remove old entry if exists
                     result[adjnode] = distance + wl;
-                    pq.add(new AbstractMap.SimpleEntry<>(result[adjnode], adjnode));
+                    t.add(new Pair(result[adjnode], adjnode));
                 }
             }
         }
