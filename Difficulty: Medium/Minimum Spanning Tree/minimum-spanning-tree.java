@@ -37,58 +37,85 @@ public class Main {
 
 
 // User function Template for Java
-class Node {
-    int key1,weight;
-    public Node(int key1,int weight){
-        this.key1=key1;
-        this.weight=weight;
-        
-    }
-}
+
 
 class Solution {
-    static int spanningTree(int V, int E, List<List<int[]>> adj) {
-        // Code Here.
-        boolean isMST[] =new boolean[V];
-        
- 
-        
-        PriorityQueue<Node>pq= new PriorityQueue<>(Comparator.comparingInt(l->l.weight));
-        // queue is based on according to weight
-        pq.add(new Node(0,0));
-        
-        int sum=0;
-        
-        
-        while(!pq.isEmpty()){
-            
-            Node pairs=pq.poll();
-            int a=pairs.key1;
-            int d=pairs.weight;
-            if(isMST[a]){
-                continue;
-            }
-            isMST[a]=true;  // add to our mst
-            
-            sum+=d;
-            
-            for(int []m:adj.get(a)){
-                int neighbor=m[0];
-                int neighbor_weight=m[1];
-                if(!isMST[neighbor]){
-                    pq.add(new Node(neighbor,neighbor_weight));
-                    
-                    
-                }
-                
-            }
-            
-            
+    // DSU Code
+    private int[] parent;
+    private int[] rank;
+
+    private int find(int x) {
+        if (x == parent[x]) 
+            return x;
+        return parent[x] = find(parent[x]);
+    }
+
+    private void union(int x, int y) {
+        int xParent = find(x);
+        int yParent = find(y);
+
+        if (xParent == yParent) 
+            return;
+
+        if (rank[xParent] > rank[yParent]) {
+            parent[yParent] = xParent;
+        } else if (rank[xParent] < rank[yParent]) {
+            parent[xParent] = yParent;
+        } else {
+            parent[xParent] = yParent;
+            rank[yParent]++;
         }
-        
+    }
+
+    private int kruskal(List<int[]> edges, int V) {
+        int sum = 0;
+        int edgesConnected = 0;
+
+        for (int[] edge : edges) {
+            int u = edge[0];
+            int v = edge[1];
+            int wt = edge[2];
+
+            int parentU = find(u);
+            int parentV = find(v);
+
+            if (parentU != parentV) {
+                union(u, v);
+                sum += wt;
+                edgesConnected++;
+            }
+        }
+
+        // Check if we formed a spanning tree
+        if (edgesConnected != V - 1) {
+            System.out.println("It's not a MST");
+        }
+
         return sum;
-        
-        
-        
+    }
+
+    public int spanningTree(int V,int E, List<List<int[]>> adj) {  // <-- Fixed parameter type
+        parent = new int[V];
+        rank = new int[V];
+
+        for (int i = 0; i < V; i++) {
+            parent[i] = i;
+            rank[i] = 0;
+        }
+
+        List<int[]> edges = new ArrayList<>();
+
+        for (int i = 0; i < V; i++) {
+            for (int[] temp : adj.get(i)) {  // <-- Fixed List access
+                int u = i;
+                int v = temp[0];
+                int d = temp[1];
+                edges.add(new int[]{u, v, d});
+            }
+        }
+
+        edges.sort(Comparator.comparingInt(a -> a[2]));
+
+        return kruskal(edges, V);
     }
 }
